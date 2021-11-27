@@ -175,6 +175,18 @@ public class Reflections implements NameHelper {
             try {
                 dir = Vfs.fromURL(url);
                 for (Vfs.File file : dir.getFiles()) {
+                    if (file.getName().contains("DemoUsageService")) {
+                        System.out.println(file);
+                    }
+                    if (file.getName().contains("TestModel")) {
+                        System.out.println(file);
+                        String fileName = file.getName();
+                        String[] names = fileName.split("\\$");
+                        String fname = names[0];
+                        if (fname.equals("TestModel")) {
+                            System.out.println(file);
+                        }
+                    }
                     if (doFilter(file, configuration.getInputsFilter())) {
                         ClassFile classFile = null;
                         for (Scanner scanner : configuration.getScanners()) {

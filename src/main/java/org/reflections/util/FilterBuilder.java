@@ -94,12 +94,17 @@ public class FilterBuilder implements Predicate<String> {
     }
 
     public boolean test(String regex) {
+        // 如果第一个是Exclude，则初始化为True，否则初始化为False
         boolean accept = chain.isEmpty() || chain.get(0) instanceof Exclude;
 
         for (Predicate<String> filter : chain) {
+            // 如果当前是True，且是Include的filter，则跳过，因为即使不Include，也不能判False，有可能别的会Include
             if (accept && filter instanceof Include) {continue;} //skip if this filter won't change
+            // 如果当前是False，且是Exclude的filter，则跳过，因为即使不Exclude，也不能判True，有可能别的会Exclude
             if (!accept && filter instanceof Exclude) {continue;}
             accept = filter.test(regex);
+            // 如果是False，且是被Exclude判为False，则不accept
+            // 但是如果被Include判True，还有可能被之后的Exclude判False，所以这里不处理
             if (!accept && filter instanceof Exclude) {break;} //break on first exclusion
         }
         return accept;

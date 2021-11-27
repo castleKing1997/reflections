@@ -1,12 +1,22 @@
 package org.reflections;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 import static java.lang.annotation.RetentionPolicy.*;
 
 @SuppressWarnings({"ALL"})
 public interface TestModel {
+    public MySuperClass anonymousRef = new @DemoAnnotation(value="Test") MySuperClass() {
+        @Override
+        public String getClassName() {
+            return "AnonymousClass";
+        }
+    };
+    public @DemoAnnotation(value="Test1") class UC1 {}
+    public @DemoAnnotation(value="Test2") @Target({ElementType.TYPE_USE}) @interface UA1 {}
     public @Retention(RUNTIME) @Inherited @interface MAI1 {}
     public @Retention(RUNTIME) @MAI1 @interface AI1 {}
     public @AI1 interface I1 {}

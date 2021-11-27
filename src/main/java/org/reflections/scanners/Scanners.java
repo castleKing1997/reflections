@@ -8,6 +8,7 @@ import org.reflections.util.QueryBuilder;
 import org.reflections.util.QueryFunction;
 import org.reflections.vfs.Vfs;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
 import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
@@ -51,6 +52,8 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
 
         @Override
         public void scan(ClassFile classFile, List<Map.Entry<String, String>> entries) {
+            String superClass = classFile.getSuperclass();
+            String[] interfaces = classFile.getInterfaces();
             entries.add(entry(classFile.getSuperclass(), classFile.getName()));
             entries.addAll(entries(Arrays.asList(classFile.getInterfaces()), classFile.getName()));
         }
@@ -65,6 +68,7 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
 
         @Override
         public void scan(ClassFile classFile, List<Map.Entry<String, String>> entries) {
+            List<String> anns = getAnnotations(classFile::getAttribute);
             entries.addAll(entries(getAnnotations(classFile::getAttribute), classFile.getName()));
         }
     },
@@ -177,9 +181,17 @@ public enum Scanners implements Scanner, QueryBuilder, NameHelper {
     MethodsReturn {
         @Override
         public void scan(ClassFile classFile, List<Map.Entry<String, String>> entries) {
+
             getMethods(classFile).forEach(method ->
                 entries.add(entry(getReturnType(method), methodName(classFile, method))));
         }
+    },
+
+    AnonymousType {
+        @Override
+        public void scan(ClassFile classFile, List<Map.Entry<String, String>> entries) {
+
+        };
     };
 
     private Predicate<String> resultFilter = s -> true; //accept all by default

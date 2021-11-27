@@ -74,7 +74,7 @@ public class ConfigurationBuilder implements Configuration {
             else if (param instanceof Iterable) { for (Object p : (Iterable) param) parameters.add(p); }
             else parameters.add(param);
         }
-
+        // 获取classloader并去重
         ClassLoader[] loaders = Stream.of(params).filter(p -> p instanceof ClassLoader).distinct().toArray(ClassLoader[]::new);
         if (loaders.length != 0) { builder.addClassLoaders(loaders); }
 
@@ -83,16 +83,21 @@ public class ConfigurationBuilder implements Configuration {
 
         for (Object param : parameters) {
             if (param instanceof String && !((String) param).isEmpty()) {
+                // 如果是String，则使用全包名加载包后，再ClasspathHelper.forPackage转为URL导入
                 builder.forPackage((String) param, loaders);
                 inputsFilter.includePackage((String) param);
             } else if (param instanceof Class && !Scanner.class.isAssignableFrom((Class) param)) {
+                // 如果是Class，且不是某种Scanner，则使用ClasspathHelper.forClass转化为URL导入
                 builder.addUrls(ClasspathHelper.forClass((Class) param, loaders));
                 inputsFilter.includePackage(((Class) param).getPackage().getName());
             } else if (param instanceof URL) {
+                // 如果是URL实例，直接导入
                 builder.addUrls((URL) param);
             } else if (param instanceof Scanner) {
+                // 如果是Scanner，则添加到Scanners中
                 builder.addScanners((Scanner) param);
             } else if (param instanceof Class && Scanner.class.isAssignableFrom((Class) param)) {
+                // 如果是Class且是某种Scanner，则实例化并添加到Scanner中
                 try { builder.addScanners(((Class<Scanner>) param).getDeclaredConstructor().newInstance()); }
                 catch (Exception e) { throw new RuntimeException(e); }
             } else if (param instanceof Predicate) {
